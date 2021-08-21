@@ -5,9 +5,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 import cbpro
 
-def buy(account):
-    account.place_market_order(product_id='BTC-USD', side='buy',funds='102.00')
-
 # account/login
 class StoreView(generics.ListAPIView):
     queryset = Store.objects.all()
@@ -26,29 +23,32 @@ class CreateStoreView(APIView):
             passphrase = serializer.data.get('passphrase')
             store = Store(key=key, secret=secret, passphrase=passphrase)
             store.save()
-            print(store)
             return Response(StoreSerializer(store).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# account/get
+# account/get?pk=7&currency=BTC-USD&funds=99.00
 class PlaceOrder(APIView):
     serializer_class = PlaceOrderSerializer
-    lookup_url_kwarg = 'pk'
+    account_id = 'pk'
+    currency_name = 'currency'
+    funds = 'funds'
 
     def get(self, request, format=None):
-        pk = request.GET.get(self.lookup_url_kwarg)
-        if pk != None:
+        pk = request.GET.get(self.account_id)
+        currency = request.GET.get(self.currency_name)
+        funds = request.GET.get(self.funds)
+        if pk != None and currency != None and funds != None:
             api = Store.objects.filter(id=pk)
             if len(api) > 0:
                 data = StoreSerializer(api[0]).data
                 auth_client = cbpro.AuthenticatedClient(data["key"], data['secret'], data['passphrase'], api_url="https://api-public.sandbox.pro.coinbase.com")
                 
-                buy(auth_client);
-
-                # auth_client.place_market_order(product_id='BTC-USD', side='buy',funds='101.00')
-                # print(data["key"], data['secret'], data['passphrase'])
+                buy(auth_client, currency, funds);
 
                 return Response(data, status=status.HTTP_200_OK)
             return Response({'Key Not Found': 'Invalid Primary Key.'}, status=status.HTTP_404_NOT_FOUND)
 
         return Response({'Bad Request': 'Key paramater not found in request'}, status=status.HTTP_400_BAD_REQUEST)
+
+def buy(account, currency, funds):
+    account.place_market_order(product_id=currency, side='buy',funds=funds)
