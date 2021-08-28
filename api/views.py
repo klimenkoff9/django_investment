@@ -5,12 +5,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 import cbpro
 
-# account/login
+# account/view
 class StoreView(generics.ListAPIView):
     queryset = Store.objects.all()
     serializer_class = StoreSerializer
 
-# account/create
+# account/add-key
 class CreateStoreView(APIView):
     serializer_class = CreateStoreSerializer
 
@@ -21,12 +21,14 @@ class CreateStoreView(APIView):
             key = serializer.data.get('key')
             secret = serializer.data.get('secret')
             passphrase = serializer.data.get('passphrase')
-            store = Store(key=key, secret=secret, passphrase=passphrase)
-            store.save()
-            return Response(StoreSerializer(store).data, status=status.HTTP_201_CREATED)
+            store_exists = Store.objects.filter(key=key)
+            if len(store_exists) == 0:
+                store = Store(key=key, secret=secret, passphrase=passphrase)
+                store.save()
+                return Response(StoreSerializer(store).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# account/get?pk=7&currency=BTC-USD&funds=99.00
+# account/place-order?pk=:pk&currency=:currency&funds=:funds
 class PlaceOrder(APIView):
     serializer_class = PlaceOrderSerializer
     account_id = 'pk'
