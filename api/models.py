@@ -4,9 +4,9 @@ from django.db import models
 
 
 class Store(models.Model):
-    key = models.CharField(max_length=100, unique=True)
-    passphrase = models.CharField(max_length=100, unique=True)
-    secret = models.CharField(max_length=100, unique=True)
+    key = models.CharField(max_length=32, unique=True)
+    passphrase = models.CharField(max_length=11, unique=True)
+    secret = models.CharField(max_length=88, unique=True)
 
 class Order(models.Model):
     product_id = models.CharField(max_length=10)
