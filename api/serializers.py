@@ -1,17 +1,17 @@
 from rest_framework import serializers
-from .models import Store, Order
+from .models import CoinbaseKeys, Orders
 
 class StoreSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Store
+        model = CoinbaseKeys
         fields = ('id', 'key', 'secret', 'passphrase')
 
-class CreateStoreSerializer(serializers.ModelSerializer):
+class CoinbaseKeysSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Store
+        model = CoinbaseKeys
         fields = ('key', 'secret', 'passphrase')
 
-class PlaceOrderSerializer(serializers.ModelSerializer):
+class OrdersSerializers(serializers.ModelSerializer):
     class Meta:
-        model = Order
-        fields = ('product_id', 'side', 'funds')
+        model = Orders
+        fields = ('currency_name', 'schedule', 'funds')
