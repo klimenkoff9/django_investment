@@ -9,5 +9,6 @@ class CoinbaseKeys(models.Model):
 class Orders(models.Model):
     currency_name = models.CharField(max_length=10)
     funds = models.FloatField()
-    schedule = models.IntegerField(max_length=10)
+    schedule = models.CharField(max_length=10)
+    coinbase_account = models.ForeignKey(CoinbaseKeys, on_delete=models.CASCADE)
 
