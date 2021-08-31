@@ -1,18 +1,23 @@
 from rest_framework import generics, serializers, status
-from .serializers import StoreSerializer, CreateStoreSerializer, PlaceOrderSerializer
-from .models import Store
+from .serializers import CoinbaseKeysSerializer, OrdersSerializers
+from .models import CoinbaseKeys, Orders
 from rest_framework.response import Response
 from rest_framework.views import APIView
-import cbpro
 
 # account/view
-class StoreView(generics.ListAPIView):
-    queryset = Store.objects.all()
-    serializer_class = StoreSerializer
+
+
+class KeysView(generics.ListAPIView):
+    queryset = CoinbaseKeys.objects.all()
+    serializer_class = CoinbaseKeysSerializer
 
 # account/add-key
-class CreateStoreView(APIView):
-    serializer_class = CreateStoreSerializer
+
+# add check if account exists
+
+
+class AddKeyView(APIView):
+    serializer_class = CoinbaseKeysSerializer
 
     def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
@@ -21,36 +26,43 @@ class CreateStoreView(APIView):
             key = serializer.data.get('key')
             secret = serializer.data.get('secret')
             passphrase = serializer.data.get('passphrase')
-            store_exists = Store.objects.filter(key=key)
-            if len(store_exists) == 0:
-                store = Store(key=key, secret=secret, passphrase=passphrase)
-                store.save()
-                return Response(StoreSerializer(store).data, status=status.HTTP_201_CREATED)
+            nickname = serializer.data.get('nickname')
+            key_exists = CoinbaseKeys.objects.filter(key=key)
+            if len(key_exists) == 0:
+                key = CoinbaseKeys(key=key, secret=secret,
+                                   passphrase=passphrase, nickname=nickname)
+                key.save()
+                return Response(CoinbaseKeysSerializer(key).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# account/place-order?pk=:pk&currency=:currency&funds=:funds
-class PlaceOrder(APIView):
-    serializer_class = PlaceOrderSerializer
-    account_id = 'pk'
-    currency_name = 'currency'
-    funds = 'funds'
+# account/place-order
 
-    def get(self, request, format=None):
-        pk = request.GET.get(self.account_id)
-        currency = request.GET.get(self.currency_name)
-        funds = request.GET.get(self.funds)
-        if pk != None and currency != None and funds != None:
-            api = Store.objects.filter(id=pk)
-            if len(api) > 0:
-                data = StoreSerializer(api[0]).data
-                auth_client = cbpro.AuthenticatedClient(data["key"], data['secret'], data['passphrase'], api_url="https://api-public.sandbox.pro.coinbase.com")
-                
-                buy(auth_client, currency, funds);
 
-                return Response(data, status=status.HTTP_200_OK)
-            return Response({'Key Not Found': 'Invalid Primary Key.'}, status=status.HTTP_404_NOT_FOUND)
+class OrderView(APIView):
+    serializer_class = OrdersSerializers
 
-        return Response({'Bad Request': 'Key paramater not found in request'}, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, format=None):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
 
-def buy(account, currency, funds):
-    account.place_market_order(product_id=currency, side='buy',funds=funds)
+            frequency = serializer.data.get('frequency')
+            currency_name = serializer.data.get('currency_name')
+            funds = serializer.data.get('funds')
+            coinbase_account = serializer.data.get('coinbase_account')
+            print(coinbase_account, funds, frequency, currency_name)
+
+            if frequency != None and currency_name != None and funds != None and coinbase_account != None:
+                order = Orders(frequency=frequency,
+                               currency_name=currency_name, funds=funds, coinbase_account=CoinbaseKeys.objects.get(id=coinbase_account))
+                order.save()
+                return Response(OrdersSerializers(order).data, status=status.HTTP_201_CREATED)
+            return Response({'Bad Request': 'Missing a param'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrdersView(generics.ListAPIView):
+    queryset = Orders.objects.all()
+    serializer_class = OrdersSerializers
+
+# def buy(account, currency, funds):
+#     account.place_market_order(product_id=currency, side='buy',funds=funds)

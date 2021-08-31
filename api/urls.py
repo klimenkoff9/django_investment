@@ -1,8 +1,9 @@
 from django.urls import path
-from .views import StoreView, CreateStoreView, PlaceOrder
+from .views import KeysView, AddKeyView, OrderView, OrdersView
 
 urlpatterns = [
-    path('view', StoreView.as_view()),
-    path('add-key', CreateStoreView.as_view()),
-    path('place-order', PlaceOrder.as_view())
+    path('view', KeysView.as_view()),
+    path('add-key', AddKeyView.as_view()),
+    path('place-order', OrderView.as_view()),
+    path('view-orders', OrdersView.as_view()),
 ]
