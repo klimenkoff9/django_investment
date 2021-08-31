@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 
 class KeysView(generics.ListAPIView):
-    queryset = CoinbaseKeys.objects.filter(id=7)
+    queryset = CoinbaseKeys.objects.all()
     serializer_class = CoinbaseKeysSerializer
 
 # account/add-key
@@ -26,10 +26,11 @@ class AddKeyView(APIView):
             key = serializer.data.get('key')
             secret = serializer.data.get('secret')
             passphrase = serializer.data.get('passphrase')
+            nickname = serializer.data.get('nickname')
             key_exists = CoinbaseKeys.objects.filter(key=key)
             if len(key_exists) == 0:
                 key = CoinbaseKeys(key=key, secret=secret,
-                                   passphrase=passphrase)
+                                   passphrase=passphrase, nickname=nickname)
                 key.save()
                 return Response(CoinbaseKeysSerializer(key).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -44,12 +45,15 @@ class OrderView(APIView):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
 
-            schedule = serializer.data.get('schedule')
+            frequency = serializer.data.get('frequency')
             currency_name = serializer.data.get('currency_name')
             funds = serializer.data.get('funds')
-            if schedule != None and currency_name != None and funds != None:
-                order = Orders(schedule=schedule,
-                               currency_name=currency_name, funds=funds, coinbase_account=CoinbaseKeys.objects.get(id=99))
+            coinbase_account = serializer.data.get('coinbase_account')
+            print(coinbase_account, funds, frequency, currency_name)
+
+            if frequency != None and currency_name != None and funds != None and coinbase_account != None:
+                order = Orders(frequency=frequency,
+                               currency_name=currency_name, funds=funds, coinbase_account=CoinbaseKeys.objects.get(id=coinbase_account))
                 order.save()
                 return Response(OrdersSerializers(order).data, status=status.HTTP_201_CREATED)
             return Response({'Bad Request': 'Missing a param'}, status=status.HTTP_400_BAD_REQUEST)
