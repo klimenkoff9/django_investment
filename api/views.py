@@ -4,6 +4,8 @@ from .models import CoinbaseKeys, Orders
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .utils.verify_account import verify_account
+
 # account/view
 
 
@@ -23,14 +25,20 @@ class AddKeyView(APIView):
         serializer = self.serializer_class(data=request.data)
 
         if serializer.is_valid():
-            key = serializer.data.get('key')
-            secret = serializer.data.get('secret')
-            passphrase = serializer.data.get('passphrase')
+            api_key = serializer.data.get('api_key')
+            api_secret = serializer.data.get('api_secret')
+            api_passphrase = serializer.data.get('api_passphrase')
             nickname = serializer.data.get('nickname')
-            key_exists = CoinbaseKeys.objects.filter(key=key)
-            if len(key_exists) == 0:
-                key = CoinbaseKeys(key=key, secret=secret,
-                                   passphrase=passphrase, nickname=nickname)
+
+            # verify if account exists
+            account_is_valid = verify_account(api_key, api_secret, api_passphrase)
+
+            # verify that key is not already in db
+            key_exists = CoinbaseKeys.objects.filter(api_key=api_key)
+
+            if len(key_exists) == 0 and account_is_valid:
+                key = CoinbaseKeys(api_key=api_key, api_secret=api_secret,
+                                   api_passphrase=api_passphrase, nickname=nickname)
                 key.save()
                 return Response(CoinbaseKeysSerializer(key).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
