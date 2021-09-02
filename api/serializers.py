@@ -3,7 +3,7 @@ from .models import CoinbaseKeys, Orders
 class CoinbaseKeysSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoinbaseKeys 
-        fields = ('id', 'key', 'secret', 'passphrase', 'nickname')
+        fields = ('id', 'api_key', 'api_secret', 'api_passphrase', 'nickname')
 
 class OrdersSerializers(serializers.ModelSerializer):
     class Meta:
