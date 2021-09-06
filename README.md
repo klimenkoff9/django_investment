@@ -37,17 +37,27 @@ And navigate to `http://127.0.0.1:8000/account/add-key/`.
 
 Note: This is a sandbox example, to use your real Coinbase Pro account follow same steps but remove api_url parameter in utils/verify_account.py on line 9
 
+
 On the `add-key` page, you can add a new key to the database. To do so navigate to `https://public.sandbox.pro.coinbase.com/profile/api-keys` and click the `+ New API Key` button.
+
 Very important! Give permissions to the key to view and trade and give it a nickname.
+
 Then, copy the `passphrase` value and enter it into the `passphrase` field.
+
 Click create key.
+
 Since we're on Sandbox you won't receive a text code so enter any dummy value.
+
 Copy the `API Secret` value and enter it into the `api_value` field.
+
 Click Done.
+
 Copy the `API Key` value above the `Nickname` line and enter it into the `api_key` field.
+
 Give the key a nickname and click Post.
 
 Congrats - you've added a new key to the database!
+
 
 Next step is to Navigate to `http://127.0.0.1:8000/account/place-order/`.
 
