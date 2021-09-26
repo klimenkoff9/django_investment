@@ -1,9 +1,6 @@
 from django.db import models
 from django.utils.translation import activate
 
-# Create your models here.
-
-
 class CoinbaseKeys(models.Model):
     nickname = models.CharField(max_length=100)
     api_key = models.CharField(max_length=32, unique=True)
@@ -30,3 +27,4 @@ class Orders(models.Model):
     coinbase_account = models.ForeignKey(
         CoinbaseKeys, on_delete=models.CASCADE)
     active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
